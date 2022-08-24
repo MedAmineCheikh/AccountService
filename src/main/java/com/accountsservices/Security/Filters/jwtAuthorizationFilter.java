@@ -27,7 +27,7 @@ public class jwtAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } else {
             String authorizationtoken = request.getHeader(JWTUtils.AUTH_HEADER);
-            if (authorizationtoken != null && authorizationtoken.startsWith("Bearer ")) {
+            if (authorizationtoken != null && authorizationtoken.startsWith(JWTUtils.PREFIX)) {
                 try {
                     String jwt = authorizationtoken.substring(7);
                     Algorithm algorithm = Algorithm.HMAC256(JWTUtils.SECRET);

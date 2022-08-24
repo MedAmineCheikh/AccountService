@@ -4,6 +4,9 @@ import com.accountsservices.Entity.AppRole;
 import com.accountsservices.Entity.AppUser;
 import com.accountsservices.Security.JWTUtils;
 import com.accountsservices.Service.AccountService;
+import com.accountsservices.dto.AppUserRequestDTO;
+import com.accountsservices.dto.AppUserResponseDTO;
+import com.accountsservices.dto.AppUserUpdateDTO;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -34,19 +37,19 @@ public class AccountRestController {
     }
 
     @PostMapping("/adduser")
-    @PostAuthorize("hasAuthority('ADMIN')")
-    public AppUser addUser(@RequestBody AppUser appUser) {
+
+    public AppUserResponseDTO addUser(@RequestBody AppUserRequestDTO appUser) {
         return accountService.addUser(appUser);
     }
 
     @PostMapping("/addrole")
-    @PostAuthorize("hasAuthority('ADMIN')")
+
     public AppRole addRole(@RequestBody AppRole role) {
         return accountService.addRole(role);
     }
 
     @PutMapping("/addRoleToUser/{roleName}/{username}")
-    @PostAuthorize("hasAuthority('ADMIN')")
+
     public void addRoleToUser(@PathVariable String roleName, @PathVariable String username) {
         accountService.addRoleToUser(roleName, username);
     }
@@ -57,9 +60,23 @@ public class AccountRestController {
     }
 
     @GetMapping("/users")
-    @PostAuthorize("hasAuthority('ADMIN')")
-    public List<AppUser> listUsers() {
+
+    public List<AppUserResponseDTO> listUsers() {
         return accountService.listUsers();
+    }
+    @PutMapping("/updateUser")
+
+    public void updateUser(@RequestBody AppUserUpdateDTO dto){
+
+        accountService.updateUser(dto);
+
+    }
+    @PutMapping("/updateUserConnected")
+    public void updateUserConnected(@RequestBody AppUserUpdateDTO dto,Principal principal)
+    {
+        AppUser user =accountService.LoadUserByUsername(principal.getName());
+
+        accountService.updateUser(dto);
     }
 
     @GetMapping("/profile")
@@ -70,7 +87,7 @@ public class AccountRestController {
     public void RefreshToken(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         String authorizationtoken = request.getHeader(JWTUtils.AUTH_HEADER);
-        if (authorizationtoken != null && authorizationtoken.startsWith("Bearer ")) {
+        if (authorizationtoken != null && authorizationtoken.startsWith(JWTUtils.PREFIX)) {
             try {
                 String jwt = authorizationtoken.substring(7);
                 Algorithm algorithm = Algorithm.HMAC256(JWTUtils.SECRET);
@@ -82,7 +99,7 @@ public class AccountRestController {
                 String jwtAccesToken = JWT.create()
                         .withSubject(user.getUsername())
                         .withExpiresAt(new Date(System.currentTimeMillis() +JWTUtils.EXPIRE_ACCESS))
-                        .withIssuer(request.getRequestURI().toString())
+                        .withIssuer(request.getRequestURL().toString())
                         .withClaim("roles", user.getAppRoles().stream().map(
                                 r -> r.getRoleName()).collect(Collectors.toList()))
                         .sign(algorithm);

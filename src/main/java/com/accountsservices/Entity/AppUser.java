@@ -36,6 +36,9 @@ public class AppUser implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date updatedAt;
     private boolean active;
+    private  String employeId;
+    @Transient
+    private Employe employe;
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<AppRole> appRoles =new ArrayList<>();
 

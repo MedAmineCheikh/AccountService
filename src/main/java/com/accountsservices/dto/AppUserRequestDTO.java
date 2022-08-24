@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Date;
 
  @Data @AllArgsConstructor @NoArgsConstructor
-public class AppUserDTO  {
+public class AppUserRequestDTO  {
 
 
     private String username;
@@ -22,6 +22,7 @@ public class AppUserDTO  {
     private String confirmedpassword;
     private String email;
     private String nomprenom;
+    private  String employeId;
     private boolean active;
 
 

@@ -36,10 +36,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String username=request.getParameter("username");
         String password=request.getParameter("password");
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken=
+        UsernamePasswordAuthenticationToken AuthenticationToken=
                 new UsernamePasswordAuthenticationToken(username,password);
-        System.out.println("Attemp authentication"+username );
-        return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        System.out.println("Attemp authentication     "  +username );
+        return authenticationManager.authenticate(AuthenticationToken);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String jwtAccesToken= JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis()+JWTUtils.EXPIRE_ACCESS))
-                .withIssuer(request.getRequestURI().toString())
+                .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles",user.getAuthorities().stream().map(
                         grantedAuthority -> grantedAuthority.getAuthority()).collect(Collectors.toList()))
                 .sign(algorithm);
@@ -61,9 +61,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String jwtRefreshToken= JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis()+ JWTUtils.EXPIRE_REFRESH))
-                .withIssuer(request.getRequestURI().toString())
+                .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
-        response.setHeader(JWTUtils.AUTH_HEADER,jwtAccesToken);
+
         Map<String,String> idToken= new HashMap<>();
         idToken.put("Access-token",jwtAccesToken);
         idToken.put("Refresh-token",jwtRefreshToken);
