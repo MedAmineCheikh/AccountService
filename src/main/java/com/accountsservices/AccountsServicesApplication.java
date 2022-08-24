@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 @SpringBootApplication
 @EnableSwagger2
 @EnableFeignClients
+@EnableGlobalMethodSecurity(prePostEnabled = true,securedEnabled = true)
 public class AccountsServicesApplication {
 
     public static void main(String[] args) {

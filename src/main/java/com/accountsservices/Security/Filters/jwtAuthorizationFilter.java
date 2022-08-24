@@ -1,5 +1,6 @@
 package com.accountsservices.Security.Filters;
 
+import com.accountsservices.Security.JWTUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -22,32 +23,33 @@ public class jwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String authorizationtoken=request.getHeader("Authorization");
-        if (authorizationtoken !=null &&authorizationtoken.startsWith("Bearer "))
-        {
-            try {
-                String jwt=authorizationtoken.substring(7);
-                Algorithm algorithm=Algorithm.HMAC256("is secret :^D");
-                JWTVerifier jwtVerifier=JWT.require(algorithm).build();
-                DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
-               String username= decodedJWT.getSubject();
-               String[] roles=decodedJWT.getClaim("roles").asArray(String.class);
-                Collection<GrantedAuthority> authorities=new ArrayList<>();
-                for (String r:roles)
-                {
-                    authorities.add(new SimpleGrantedAuthority(r));
+        if (request.getServletPath().equals("/refreshtoken")) {
+            filterChain.doFilter(request, response);
+        } else {
+            String authorizationtoken = request.getHeader(JWTUtils.AUTH_HEADER);
+            if (authorizationtoken != null && authorizationtoken.startsWith("Bearer ")) {
+                try {
+                    String jwt = authorizationtoken.substring(7);
+                    Algorithm algorithm = Algorithm.HMAC256(JWTUtils.SECRET);
+                    JWTVerifier jwtVerifier = JWT.require(algorithm).build();
+                    DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
+                    String username = decodedJWT.getSubject();
+                    String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
+                    Collection<GrantedAuthority> authorities = new ArrayList<>();
+                    for (String r : roles) {
+                        authorities.add(new SimpleGrantedAuthority(r));
+                    }
+                    UsernamePasswordAuthenticationToken AuthenticationToken =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(AuthenticationToken);
+                    filterChain.doFilter(request, response);
+                } catch (Exception e) {
+                    response.setHeader("error message", e.getMessage());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
                 }
-                UsernamePasswordAuthenticationToken AuthenticationToken=
-                        new UsernamePasswordAuthenticationToken(username,null,authorities);
-                SecurityContextHolder.getContext().setAuthentication(AuthenticationToken);
-                filterChain.doFilter(request,response);
-            }catch (Exception e){
-                response.setHeader("error message",e.getMessage());
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            }
+            } else filterChain.doFilter(request, response);
+
+
         }
-        else filterChain.doFilter(request,response);
-
-
     }
 }

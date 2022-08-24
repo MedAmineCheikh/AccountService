@@ -54,9 +54,18 @@ public class AccountServiceImpl implements AccountService {
         String up= roleName.toUpperCase();
         AppUser appUser =appUserRepo.findByUsername(username);
         AppRole appRole=appRoleRepo.findByRoleName(up);
-        appUser.getAppRoles().add(appRole);
+        for (AppRole role: appUser.getAppRoles())
+        {
+            if (role.getRoleName().equals(appRole.getRoleName()))
+            {
+              throw new RuntimeException("Role Already exist !");
+            }
+        }
 
-    }
+        appUser.getAppRoles().add(appRole);}
+
+
+
 
     @Override
     public AppUser LoadUserByUsername(String username) {
